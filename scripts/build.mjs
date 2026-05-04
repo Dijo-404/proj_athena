@@ -1,6 +1,7 @@
 import fs from "fs/promises";
 import path from "path";
 import { fileURLToPath } from "url";
+import { bundle } from "./bundle-webllm.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const distRoot = path.join(root, "dist");
@@ -28,6 +29,8 @@ export async function build() {
     const dest = path.join(distDir, entry);
     await copyEntry(src, dest);
   }
+
+  await bundle();
 }
 
 async function copyEntry(src, dest) {

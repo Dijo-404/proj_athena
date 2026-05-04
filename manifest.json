@@ -4,7 +4,7 @@
   "version": "0.1.0",
   "description": "Tamil-first Scholarship Agent",
   "permissions": ["storage", "activeTab", "scripting", "alarms", "tabs", "sidePanel"],
-  "host_permissions": ["http://localhost:11434/*"],
+  "host_permissions": [],
   "side_panel": {
     "default_path": "sidepanel.html"
   },
@@ -19,7 +19,7 @@
     }
   ],
   "content_security_policy": {
-    "extension_pages": "script-src 'self' 'wasm-unsafe-eval' https://esm.run https://cdn.jsdelivr.net; object-src 'self'; connect-src 'self' http://localhost:11434 https://esm.run https://cdn.jsdelivr.net https://huggingface.co https://cdn-lfs.huggingface.co"
+    "extension_pages": "script-src 'self' 'wasm-unsafe-eval'; object-src 'self'; connect-src 'self' http://localhost:11434 https://huggingface.co https://cdn-lfs.huggingface.co"
   },
   "icons": {
     "48": "icons/icon48.png",

@@ -27,7 +27,7 @@ const LANGUAGE_LABELS = {
 
 const USE_LOCAL_MODEL = true;
 const ALLOW_OLLAMA_FALLBACK = false;
-const LOCAL_MODEL_IMPORT_URL = "https://esm.run/@mlc-ai/web-llm";
+const LOCAL_MODEL_IMPORT_URL = "webllm.js";
 const LOCAL_MODEL_ID = "gemma-2b-it-q4f16_1";
 const LOCAL_MODEL_LABEL = "Gemma 2B";
 const MAX_TOOL_STEPS = 6;
@@ -371,7 +371,8 @@ async function ensureLocalModel() {
   localEnginePromise = (async () => {
     try {
       setStatus(`Loading ${LOCAL_MODEL_LABEL}...`, "busy");
-      const webllm = await import(LOCAL_MODEL_IMPORT_URL);
+      const moduleUrl = chrome.runtime.getURL(LOCAL_MODEL_IMPORT_URL);
+      const webllm = await import(moduleUrl);
       const engine = await webllm.CreateMLCEngine(LOCAL_MODEL_ID, {
         initProgressCallback: (report) => {
           if (typeof report?.progress === "number") {
