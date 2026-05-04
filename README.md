@@ -92,6 +92,21 @@ cd athena
 
 ---
 
+## Build & Packaging
+
+Requires Node.js 18+ and the `zip` CLI (or replace with 7z).
+
+```bash
+# Generate minimal icons (only needed if you change them)
+npm run icons
+
+# Build into dist/athena for Chrome loading or packaging
+npm run build
+
+# Package as dist/athena.zip for Chrome Web Store
+npm run package
+```
+
 ## Project Structure
 
 ```
@@ -130,24 +145,18 @@ athena/
 
 ## Architecture Overview
 
-```
-Student speaks Tamil
-        ↓
-  Web Speech API (ta-IN)
-        ↓
-  Gemma 4 via Ollama
-  (function calling + Tamil reasoning)
-        ↓
-  ┌─────────────────────────────────┐
-  │  match_scholarships(profile)    │  → Ranked JSON list
-  │  check_eligibility(scheme_id)   │  → Eligibility reasoning
-  │  fill_field(selector, value)    │  → DOM action
-  └─────────────────────────────────┘
-        ↓
-  Content script executes on portal
-        ↓
-  Application submitted
-  Status saved to chrome.storage.local
+```mermaid
+flowchart TD
+  A[Student speaks Tamil] --> B[Web Speech API (ta-IN)]
+  B --> C[Gemma 4 via Ollama\nFunction calling + Tamil reasoning]
+  C --> D[match_scholarships(profile)\nRanked JSON list]
+  C --> E[check_eligibility(scheme_id)\nEligibility reasoning]
+  C --> F[fill_field(selector, value)\nDOM action]
+  D --> G[Content script executes on portal]
+  E --> G
+  F --> G
+  G --> H[Application submitted]
+  H --> I[Status saved to chrome.storage.local]
 ```
 
 See [ARCHITECTURE.md](./ARCHITECTURE.md) for full technical details.
