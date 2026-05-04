@@ -5,9 +5,16 @@ const chatInput = document.getElementById("chat-input");
 const messagesEl = document.getElementById("messages");
 const matchesList = document.getElementById("matches-list");
 const matchesEmpty = document.getElementById("matches-empty");
+const applicationsList = document.getElementById("applications-list");
+const applicationsEmpty = document.getElementById("applications-empty");
+const refreshAppsBtn = document.getElementById("refresh-apps-btn");
 const matchBtn = document.getElementById("match-btn");
 const saveBtn = document.getElementById("save-btn");
 const voiceBtn = document.getElementById("voice-btn");
+
+let activeStrings = {};
+let cachedMatches = [];
+let cachedApplications = [];
 
 const currencyFormatter = new Intl.NumberFormat("en-IN", {
   style: "currency",
@@ -18,6 +25,7 @@ const currencyFormatter = new Intl.NumberFormat("en-IN", {
 setStatus("Ready", "idle");
 loadProfile();
 loadLocale();
+refreshApplications();
 
 chatForm.addEventListener("submit", async (event) => {
   event.preventDefault();
@@ -76,6 +84,10 @@ saveBtn.addEventListener("click", () => {
   setStatus("Profile saved", "idle");
 });
 
+refreshAppsBtn.addEventListener("click", () => {
+  refreshApplications();
+});
+
 initVoiceInput();
 
 profileForm.elements.language.addEventListener("change", (event) => {
@@ -110,6 +122,8 @@ function applyLocale(strings) {
     return;
   }
 
+  activeStrings = strings;
+
   document.querySelectorAll("[data-i18n]").forEach((element) => {
     const key = element.dataset.i18n;
     if (strings[key]) {
@@ -123,6 +137,13 @@ function applyLocale(strings) {
       element.setAttribute("placeholder", strings[key]);
     }
   });
+
+  if (cachedMatches.length > 0) {
+    renderMatches(cachedMatches);
+  }
+  if (cachedApplications.length > 0) {
+    renderApplications(cachedApplications);
+  }
 }
 
 function readProfileFromForm() {
@@ -173,6 +194,7 @@ function addMessage(role, text) {
 }
 
 function renderMatches(matches) {
+  cachedMatches = Array.isArray(matches) ? matches : [];
   matchesList.innerHTML = "";
 
   if (!matches || matches.length === 0) {
@@ -206,8 +228,128 @@ function renderMatches(matches) {
     item.appendChild(title);
     item.appendChild(meta);
     item.appendChild(reason);
+
+    if (match.id) {
+      const actions = document.createElement("div");
+      actions.className = "match-actions";
+
+      const trackBtn = document.createElement("button");
+      trackBtn.type = "button";
+      trackBtn.className = "track-btn";
+      trackBtn.textContent = getString("track_button", "Track");
+      trackBtn.addEventListener("click", () => trackMatch(match));
+
+      actions.appendChild(trackBtn);
+      item.appendChild(actions);
+    }
+
     matchesList.appendChild(item);
   });
+}
+
+async function refreshApplications() {
+  setStatus(
+    getString("applications_loading", "Loading applications..."),
+    "busy",
+  );
+  const response = await sendMessageToBackground("LIST_APPLICATIONS");
+
+  if (!response || !response.ok) {
+    setStatus(response?.error || "List failed", "error");
+    return;
+  }
+
+  renderApplications(response.applications || []);
+  setStatus("Ready", "idle");
+}
+
+function renderApplications(applications) {
+  cachedApplications = Array.isArray(applications) ? applications : [];
+  applicationsList.innerHTML = "";
+
+  if (!applications || applications.length === 0) {
+    applicationsEmpty.style.display = "block";
+    return;
+  }
+
+  applicationsEmpty.style.display = "none";
+
+  applications.forEach((application) => {
+    const item = document.createElement("li");
+    item.className = "application";
+
+    const title = document.createElement("h3");
+    title.textContent =
+      application.name_ta || application.name || application.scheme_id;
+
+    const meta = document.createElement("p");
+    meta.className = "application-meta";
+
+    const parts = [];
+    const statusText = getStatusLabel(application.status);
+    if (statusText) {
+      parts.push(`${getString("status_label", "Status")}: ${statusText}`);
+    }
+    if (application.deadline) {
+      parts.push(
+        `${getString("deadline_label", "Deadline")}: ${application.deadline}`,
+      );
+    }
+    if (
+      application.days_remaining !== null &&
+      application.days_remaining !== undefined
+    ) {
+      parts.push(
+        `${application.days_remaining} ${getString(
+          "days_remaining_suffix",
+          "days left",
+        )}`,
+      );
+    }
+
+    meta.textContent = parts.join(" · ");
+
+    item.appendChild(title);
+    item.appendChild(meta);
+    applicationsList.appendChild(item);
+  });
+}
+
+async function trackMatch(match) {
+  if (!match || !match.id) {
+    return;
+  }
+
+  setStatus(getString("track_status", "Tracking..."), "busy");
+  const response = await sendMessageToBackground("SAVE_APPLICATION", {
+    scheme_id: match.id,
+    status: "pending",
+  });
+
+  if (!response || !response.ok) {
+    setStatus(response?.error || "Track failed", "error");
+    return;
+  }
+
+  setStatus(getString("track_success", "Tracked"), "idle");
+  refreshApplications();
+}
+
+function getString(key, fallback) {
+  return activeStrings?.[key] || fallback || "";
+}
+
+function getStatusLabel(status) {
+  if (!status) {
+    return "";
+  }
+
+  const key = `status_${status}`;
+  if (activeStrings?.[key]) {
+    return activeStrings[key];
+  }
+
+  return status.replace(/_/g, " ");
 }
 
 function initVoiceInput() {

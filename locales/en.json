@@ -23,5 +23,19 @@
   "send_button": "Send",
   "voice_button": "Voice",
   "matches_title": "Matches",
-  "matches_empty": "No matches yet. Use Find Matches."
+  "matches_empty": "No matches yet. Use Find Matches.",
+  "applications_title": "Applications",
+  "refresh_button": "Refresh",
+  "applications_empty": "No applications tracked yet.",
+  "applications_loading": "Loading applications...",
+  "track_button": "Track",
+  "track_status": "Tracking...",
+  "track_success": "Tracked",
+  "status_label": "Status",
+  "deadline_label": "Deadline",
+  "days_remaining_suffix": "days left",
+  "status_pending": "Pending",
+  "status_submitted": "Submitted",
+  "status_approved": "Approved",
+  "status_rejected": "Rejected"
 }

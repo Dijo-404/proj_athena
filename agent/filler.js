@@ -132,7 +132,9 @@ const AthenaFiller = (() => {
   }
 
   function normalizeText(value) {
-    return String(value)
+    const base = String(value);
+    const normalized = base.normalize ? base.normalize("NFKC") : base;
+    return normalized
       .toLowerCase()
       .replace(/[\s:]+/g, " ")
       .replace(/[^\p{L}\p{N}\s]/gu, "")

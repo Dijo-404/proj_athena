@@ -153,6 +153,17 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       );
     return true;
   }
+
+  if (message.type === "DOM_UPDATED") {
+    const snapshot = {
+      ...(message.payload || {}),
+      updated_at: new Date().toISOString(),
+    };
+    chrome.storage.local.set({ lastDomContext: snapshot }, () => {
+      sendResponse({ ok: true });
+    });
+    return true;
+  }
 });
 
 async function handleChatRequest(payload) {

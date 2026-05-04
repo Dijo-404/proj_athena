@@ -23,5 +23,19 @@
   "send_button": "அனுப்பு",
   "voice_button": "குரல்",
   "matches_title": "பொருத்தங்கள்",
-  "matches_empty": "இன்னும் பொருத்தங்கள் இல்லை. பொருத்தங்களை காண்க என்பதை பயன்படுத்தவும்."
+  "matches_empty": "இன்னும் பொருத்தங்கள் இல்லை. பொருத்தங்களை காண்க என்பதை பயன்படுத்தவும்.",
+  "applications_title": "விண்ணப்பங்கள்",
+  "refresh_button": "புதுப்பிக்கவும்",
+  "applications_empty": "இன்னும் எந்த விண்ணப்பமும் கண்காணிக்கப்படவில்லை.",
+  "applications_loading": "விண்ணப்பங்கள் ஏற்றப்படுகிறது...",
+  "track_button": "கண்காணிக்கவும்",
+  "track_status": "கண்காணிப்பு சேர்க்கப்படுகிறது...",
+  "track_success": "கண்காணிப்பு சேர்க்கப்பட்டது",
+  "status_label": "நிலை",
+  "deadline_label": "கடைசி தேதி",
+  "days_remaining_suffix": "நாட்கள் மீதி",
+  "status_pending": "நிலுவையில்",
+  "status_submitted": "சமர்ப்பிக்கப்பட்டது",
+  "status_approved": "ஒப்புதல் பெற்றது",
+  "status_rejected": "நிராகரிக்கப்பட்டது"
 }
