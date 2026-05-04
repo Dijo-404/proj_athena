@@ -1,1 +1,8 @@
 dist/
+node_modules/
+.venv/
+.env
+.env.*
+*.log
+.DS_Store
+.vscode/
