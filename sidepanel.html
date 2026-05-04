@@ -99,13 +99,19 @@
                 data-i18n-placeholder="district_placeholder"
               />
             </label>
-            <label>
-              <span data-i18n="language_label">Language</span>
-              <select name="language">
-                <option value="ta" selected>Tamil</option>
-                <option value="en">English</option>
-              </select>
-            </label>
+            <fieldset class="language-field">
+              <legend data-i18n="language_label">Preferred languages</legend>
+              <div class="language-options">
+                <label class="language-option">
+                  <input type="checkbox" name="languages" value="ta" checked />
+                  <span data-i18n="language_tamil">Tamil</span>
+                </label>
+                <label class="language-option">
+                  <input type="checkbox" name="languages" value="en" />
+                  <span data-i18n="language_english">English</span>
+                </label>
+              </div>
+            </fieldset>
           </div>
         </form>
         <div class="profile-actions">
@@ -172,6 +178,8 @@
         </p>
       </section>
     </main>
-    <script src="sidepanel.js"></script>
+    <script src="data/db.js"></script>
+    <script src="agent/matcher.js"></script>
+    <script src="sidepanel.js" type="module"></script>
   </body>
 </html>

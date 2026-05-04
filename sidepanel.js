@@ -11,6 +11,124 @@ const refreshAppsBtn = document.getElementById("refresh-apps-btn");
 const matchBtn = document.getElementById("match-btn");
 const saveBtn = document.getElementById("save-btn");
 const voiceBtn = document.getElementById("voice-btn");
+const languageInputs = document.querySelectorAll(
+  'input[name="languages"]',
+);
+
+const LANGUAGE_ORDER = ["ta", "en"];
+const LANGUAGE_SPEECH = {
+  ta: "ta-IN",
+  en: "en-IN",
+};
+const LANGUAGE_LABELS = {
+  ta: "Tamil",
+  en: "English",
+};
+
+const USE_LOCAL_MODEL = true;
+const ALLOW_OLLAMA_FALLBACK = false;
+const LOCAL_MODEL_IMPORT_URL = "https://esm.run/@mlc-ai/web-llm";
+const LOCAL_MODEL_ID = "gemma-2b-it-q4f16_1";
+const LOCAL_MODEL_LABEL = "Gemma 2B";
+const MAX_TOOL_STEPS = 6;
+
+const TOOL_SCHEMA = [
+  {
+    type: "function",
+    function: {
+      name: "match_scholarships",
+      description:
+        "Find scholarships matching the student's profile from the local database",
+      parameters: {
+        type: "object",
+        properties: {
+          caste_category: {
+            type: "string",
+            enum: ["BC", "MBC", "SC", "ST", "OC", "OBC"],
+            description: "Student's caste category",
+          },
+          annual_income: {
+            type: "number",
+            description: "Family annual income in INR",
+          },
+          course_level: {
+            type: "string",
+            enum: ["10th", "12th", "UG", "PG", "Diploma", "ITI"],
+            description: "Current course level",
+          },
+          percentage: {
+            type: "number",
+            description: "Last exam percentage",
+          },
+          district: {
+            type: "string",
+            description: "District in Tamil Nadu",
+          },
+        },
+        required: ["caste_category", "annual_income", "course_level"],
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "fill_field",
+      description:
+        "Fill a specific form field on the current scholarship portal page",
+      parameters: {
+        type: "object",
+        properties: {
+          field_label: {
+            type: "string",
+            description: "Visible label of the form field",
+          },
+          value: {
+            type: "string",
+            description: "Value to enter",
+          },
+          action: {
+            type: "string",
+            enum: ["type", "select", "click", "upload"],
+            description: "Interaction type",
+          },
+        },
+        required: ["field_label", "value", "action"],
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "check_eligibility",
+      description: "Verify if the student is eligible for a specific scheme",
+      parameters: {
+        type: "object",
+        properties: {
+          scheme_id: { type: "string" },
+          student_profile: { type: "object" },
+        },
+        required: ["scheme_id", "student_profile"],
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "get_deadline",
+      description: "Get application deadline for a scheme",
+      parameters: {
+        type: "object",
+        properties: {
+          scheme_id: { type: "string" },
+        },
+        required: ["scheme_id"],
+      },
+    },
+  },
+];
+
+let localEnginePromise = null;
+let localDbReady = false;
 
 let activeStrings = {};
 let cachedMatches = [];
@@ -42,10 +160,21 @@ chatForm.addEventListener("submit", async (event) => {
   chatInput.value = "";
 
   setStatus("Thinking...", "busy");
-  const response = await sendMessageToBackground("CHAT_REQUEST", {
-    message,
-    profile,
-  });
+  let response = null;
+  if (USE_LOCAL_MODEL) {
+    response = await sendMessageToLocalModel(message, profile);
+    if (!response.ok && ALLOW_OLLAMA_FALLBACK) {
+      response = await sendMessageToBackground("CHAT_REQUEST", {
+        message,
+        profile,
+      });
+    }
+  } else {
+    response = await sendMessageToBackground("CHAT_REQUEST", {
+      message,
+      profile,
+    });
+  }
 
   if (!response || !response.ok) {
     setStatus(response?.error || "Request failed", "error");
@@ -90,8 +219,11 @@ refreshAppsBtn.addEventListener("click", () => {
 
 initVoiceInput();
 
-profileForm.elements.language.addEventListener("change", (event) => {
-  loadLocale(event.target.value);
+languageInputs.forEach((input) => {
+  input.addEventListener("change", () => {
+    const languages = ensureLanguagesSelected();
+    loadLocale(getPrimaryLanguage(languages));
+  });
 });
 
 function setStatus(text, tone) {
@@ -100,7 +232,7 @@ function setStatus(text, tone) {
 }
 
 async function loadLocale(languageOverride) {
-  const language = normalizeString(languageOverride) || inferBrowserLanguage();
+  const language = getPrimaryLanguage(languageOverride);
   document.documentElement.lang = language;
 
   try {
@@ -146,8 +278,321 @@ function applyLocale(strings) {
   }
 }
 
+function getLanguageLabel(language) {
+  return LANGUAGE_LABELS[language] || "English";
+}
+
+function buildSystemPrompt(profile) {
+  const preferredLanguages = normalizeLanguageList(
+    profile.languages || profile.language,
+  );
+  const primaryLanguage = getPrimaryLanguage(preferredLanguages);
+  const primaryLabel = getLanguageLabel(primaryLanguage);
+  const secondaryLanguage = preferredLanguages[1];
+  const secondaryLabel = secondaryLanguage
+    ? getLanguageLabel(secondaryLanguage)
+    : "";
+  const languageList = preferredLanguages.length
+    ? preferredLanguages.map(getLanguageLabel).join(", ")
+    : primaryLabel;
+  const tamilInstructions =
+    "IMPORTANT: Always respond in Tamil. Use simple, conversational Tamil. " +
+    "Avoid formal or literary Tamil. When listing scholarships, use Tamil names where available.";
+  const secondaryInstruction = secondaryLanguage
+    ? `If helpful, add a short ${secondaryLabel} summary after the main response.`
+    : "";
+
+  return `You are Athena, a helpful scholarship assistant for students in Tamil Nadu, India.
+
+${primaryLanguage === "ta" ? tamilInstructions : ""}
+Preferred response languages: ${languageList}.
+Primary language: ${primaryLabel}.
+${secondaryInstruction}
+
+The student's profile:
+- Name: ${profile.name || ""}
+- Caste category: ${profile.caste_category || ""}
+- Annual family income: INR ${profile.annual_income ?? ""}
+- Course: ${profile.course || ""} (${profile.course_level || ""})
+- Last exam percentage: ${profile.percentage ?? ""}%
+- District: ${profile.district || ""}, Tamil Nadu
+
+Your job is to:
+1. Find scholarships this student is eligible for
+2. Explain eligibility clearly in ${primaryLabel}
+3. Help fill application forms step by step
+4. Track application status
+
+Use the available tools to match scholarships and fill forms.
+When filling forms, proceed step by step and confirm each action.
+
+Always use the <|think|> token before making eligibility decisions.`;
+}
+
+function parseToolArguments(rawArgs) {
+  if (!rawArgs) {
+    return {};
+  }
+
+  if (typeof rawArgs === "string") {
+    try {
+      return JSON.parse(rawArgs);
+    } catch (error) {
+      return {};
+    }
+  }
+
+  return rawArgs;
+}
+
+async function ensureLocalDb() {
+  if (localDbReady) {
+    return;
+  }
+
+  if (!window.AthenaDB) {
+    throw new Error("Local database helpers are not available.");
+  }
+
+  await window.AthenaDB.initDB();
+  await window.AthenaDB.seedSchemesIfEmpty();
+  localDbReady = true;
+}
+
+async function ensureLocalModel() {
+  if (localEnginePromise) {
+    return localEnginePromise;
+  }
+
+  if (!("gpu" in navigator)) {
+    throw new Error("WebGPU is not available in this browser.");
+  }
+
+  localEnginePromise = (async () => {
+    try {
+      setStatus(`Loading ${LOCAL_MODEL_LABEL}...`, "busy");
+      const webllm = await import(LOCAL_MODEL_IMPORT_URL);
+      const engine = await webllm.CreateMLCEngine(LOCAL_MODEL_ID, {
+        initProgressCallback: (report) => {
+          if (typeof report?.progress === "number") {
+            const pct = Math.round(report.progress * 100);
+            setStatus(`Loading ${LOCAL_MODEL_LABEL} ${pct}%`, "busy");
+            return;
+          }
+          if (report?.text) {
+            setStatus(report.text, "busy");
+          }
+        },
+      });
+      return engine;
+    } catch (error) {
+      localEnginePromise = null;
+      throw error;
+    }
+  })();
+
+  return localEnginePromise;
+}
+
+async function queryLocalModel(messages, tools) {
+  const engine = await ensureLocalModel();
+  return engine.chat.completions.create({
+    messages,
+    tools,
+    temperature: 0.1,
+    max_tokens: 512,
+  });
+}
+
+async function executeLocalAgentLoop(userMessage, profile) {
+  await ensureLocalDb();
+
+  const messages = [
+    {
+      role: "system",
+      content: buildSystemPrompt(profile),
+    },
+    {
+      role: "user",
+      content: userMessage,
+    },
+  ];
+
+  for (let step = 0; step < MAX_TOOL_STEPS; step += 1) {
+    const response = await queryLocalModel(messages, TOOL_SCHEMA);
+    const message = response?.choices?.[0]?.message;
+
+    if (!message) {
+      return { error: "Model response missing." };
+    }
+
+    messages.push(message);
+
+    if (message.tool_calls && message.tool_calls.length > 0) {
+      for (const toolCall of message.tool_calls) {
+        const toolName = toolCall.function?.name || "";
+        const toolArgs = parseToolArguments(toolCall.function?.arguments);
+        const result = await executeLocalTool(toolName, toolArgs);
+        const toolMessage = {
+          role: "tool",
+          content: JSON.stringify(result),
+        };
+        if (toolCall.id) {
+          toolMessage.tool_call_id = toolCall.id;
+        }
+        messages.push(toolMessage);
+      }
+      continue;
+    }
+
+    return { text: message.content || "" };
+  }
+
+  return {
+    text: "I need more steps to finish this request. Please provide more details.",
+  };
+}
+
+async function executeLocalTool(name, args) {
+  if (name === "match_scholarships") {
+    if (typeof window.matchScholarships === "function") {
+      return window.matchScholarships(args);
+    }
+    return { ok: false, error: "match_scholarships unavailable." };
+  }
+
+  if (name === "check_eligibility") {
+    if (typeof window.checkEligibility === "function") {
+      return window.checkEligibility(args?.scheme_id, args?.student_profile);
+    }
+    return { ok: false, error: "check_eligibility unavailable." };
+  }
+
+  if (name === "get_deadline") {
+    if (typeof window.getDeadline === "function") {
+      return window.getDeadline(args?.scheme_id);
+    }
+    return { ok: false, error: "get_deadline unavailable." };
+  }
+
+  if (name === "fill_field") {
+    return sendFillField(args);
+  }
+
+  return { ok: false, error: `Unknown tool: ${name}` };
+}
+
+async function sendFillField(args) {
+  const tab = await getActiveTab();
+
+  if (!tab || typeof tab.id !== "number") {
+    return { ok: false, error: "No active tab to fill." };
+  }
+
+  return new Promise((resolve) => {
+    chrome.tabs.sendMessage(
+      tab.id,
+      { type: "FILL_FIELD", payload: args },
+      (response) => {
+        if (chrome.runtime.lastError) {
+          resolve({ ok: false, error: chrome.runtime.lastError.message });
+          return;
+        }
+        resolve(
+          response || { ok: false, error: "No response from content script." },
+        );
+      },
+    );
+  });
+}
+
+function getActiveTab() {
+  return new Promise((resolve) => {
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      resolve(tabs && tabs.length > 0 ? tabs[0] : null);
+    });
+  });
+}
+
+async function sendMessageToLocalModel(message, profile) {
+  try {
+    const result = await executeLocalAgentLoop(message, profile);
+    if (result.error) {
+      return { ok: false, error: result.error };
+    }
+    return { ok: true, text: result.text || "" };
+  } catch (error) {
+    const detail = error?.message || "Local model failed.";
+    return { ok: false, error: detail };
+  }
+}
+
+function normalizeLanguageList(value) {
+  const rawList = Array.isArray(value) ? value : value ? [value] : [];
+  const normalized = rawList
+    .map((item) => normalizeString(item))
+    .filter(Boolean);
+
+  const ordered = [];
+  LANGUAGE_ORDER.forEach((language) => {
+    if (normalized.includes(language)) {
+      ordered.push(language);
+    }
+  });
+
+  return ordered;
+}
+
+function getSelectedLanguages() {
+  const selected = Array.from(languageInputs)
+    .filter((input) => input.checked)
+    .map((input) => normalizeString(input.value))
+    .filter(Boolean);
+
+  return normalizeLanguageList(selected);
+}
+
+function setLanguageSelections(languages) {
+  const normalized = normalizeLanguageList(languages);
+  languageInputs.forEach((input) => {
+    input.checked = normalized.includes(input.value);
+  });
+
+  if (normalized.length === 0 && languageInputs.length > 0) {
+    const fallback = inferBrowserLanguage();
+    const fallbackInput = profileForm.querySelector(
+      `input[name="languages"][value="${fallback}"]`,
+    );
+    if (fallbackInput) {
+      fallbackInput.checked = true;
+    }
+  }
+}
+
+function ensureLanguagesSelected() {
+  let selected = getSelectedLanguages();
+  if (selected.length === 0) {
+    const fallback = inferBrowserLanguage();
+    const fallbackInput = profileForm.querySelector(
+      `input[name="languages"][value="${fallback}"]`,
+    );
+    if (fallbackInput) {
+      fallbackInput.checked = true;
+    }
+    selected = [fallback];
+  }
+  return selected;
+}
+
+function getPrimaryLanguage(languages) {
+  const normalized = normalizeLanguageList(languages);
+  return normalized[0] || inferBrowserLanguage();
+}
+
 function readProfileFromForm() {
   const formData = new FormData(profileForm);
+  const languages = ensureLanguagesSelected();
+  const primaryLanguage = getPrimaryLanguage(languages);
   return {
     name: normalizeString(formData.get("name")),
     caste_category: normalizeString(formData.get("caste_category")),
@@ -156,7 +601,8 @@ function readProfileFromForm() {
     course: normalizeString(formData.get("course")),
     percentage: toNumber(formData.get("percentage")),
     district: normalizeString(formData.get("district")),
-    language: normalizeString(formData.get("language")) || "ta",
+    languages,
+    language: primaryLanguage,
   };
 }
 
@@ -172,8 +618,11 @@ function fillProfileForm(profile) {
   profileForm.elements.course.value = profile.course || "";
   profileForm.elements.percentage.value = profile.percentage ?? "";
   profileForm.elements.district.value = profile.district || "";
-  profileForm.elements.language.value = profile.language || "ta";
-  loadLocale(profile.language);
+  const languages = normalizeLanguageList(
+    profile.languages || profile.language,
+  );
+  setLanguageSelections(languages);
+  loadLocale(getPrimaryLanguage(languages));
 }
 
 function addMessage(role, text) {
@@ -382,9 +831,10 @@ function initVoiceInput() {
   };
 
   voiceBtn.addEventListener("click", () => {
-    const selectedLang =
-      normalizeString(profileForm.elements.language.value) || "ta";
-    recognition.lang = selectedLang === "ta" ? "ta-IN" : "en-IN";
+    const selectedLanguages = ensureLanguagesSelected();
+    const primaryLanguage = getPrimaryLanguage(selectedLanguages);
+    recognition.lang =
+      LANGUAGE_SPEECH[primaryLanguage] || LANGUAGE_SPEECH.en;
     setStatus("Listening...", "recording");
     recognition.start();
   });

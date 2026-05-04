@@ -10,6 +10,11 @@ chrome.runtime.onInstalled.addListener(() => {
 const OLLAMA_URL = "http://localhost:11434/api/chat";
 const MODEL_NAME = "gemma3:4b";
 const MAX_TOOL_STEPS = 6;
+const LANGUAGE_ORDER = ["ta", "en"];
+const LANGUAGE_LABELS = {
+  ta: "Tamil",
+  en: "English",
+};
 
 const TOOL_SCHEMA = [
   {
@@ -337,15 +342,57 @@ function parseToolArguments(rawArgs) {
   return rawArgs;
 }
 
+function normalizeLanguageList(value) {
+  const rawList = Array.isArray(value) ? value : value ? [value] : [];
+  const normalized = rawList
+    .map((item) => safeString(item))
+    .filter(Boolean);
+
+  const ordered = [];
+  LANGUAGE_ORDER.forEach((language) => {
+    if (normalized.includes(language)) {
+      ordered.push(language);
+    }
+  });
+
+  return ordered;
+}
+
+function getPrimaryLanguage(languages) {
+  const normalized = normalizeLanguageList(languages);
+  return normalized[0] || "ta";
+}
+
+function getLanguageLabel(language) {
+  return LANGUAGE_LABELS[language] || "English";
+}
+
 function buildSystemPrompt(profile) {
-  const language = profile.language || "ta";
+  const preferredLanguages = normalizeLanguageList(
+    profile.languages || profile.language,
+  );
+  const primaryLanguage = getPrimaryLanguage(preferredLanguages);
+  const primaryLabel = getLanguageLabel(primaryLanguage);
+  const secondaryLanguage = preferredLanguages[1];
+  const secondaryLabel = secondaryLanguage
+    ? getLanguageLabel(secondaryLanguage)
+    : "";
+  const languageList = preferredLanguages.length
+    ? preferredLanguages.map(getLanguageLabel).join(", ")
+    : primaryLabel;
   const tamilInstructions =
     "IMPORTANT: Always respond in Tamil (தமிழ்). Use simple, conversational Tamil. " +
     "Avoid formal or literary Tamil. When listing scholarships, use Tamil names where available.";
+  const secondaryInstruction = secondaryLanguage
+    ? `If helpful, add a short ${secondaryLabel} summary after the main response.`
+    : "";
 
   return `You are Athena, a helpful scholarship assistant for students in Tamil Nadu, India.
 
-${language === "ta" ? tamilInstructions : ""}
+${primaryLanguage === "ta" ? tamilInstructions : ""}
+Preferred response languages: ${languageList}.
+Primary language: ${primaryLabel}.
+${secondaryInstruction}
 
 The student's profile:
 - Name: ${profile.name || ""}
@@ -357,7 +404,7 @@ The student's profile:
 
 Your job is to:
 1. Find scholarships this student is eligible for
-2. Explain eligibility clearly in ${language === "ta" ? "Tamil" : "English"}
+2. Explain eligibility clearly in ${primaryLabel}
 3. Help fill application forms step by step
 4. Track application status
 
@@ -368,6 +415,8 @@ Always use the <|think|> token before making eligibility decisions.`;
 }
 
 function normalizeProfile(input) {
+  const languages = normalizeLanguageList(input?.languages ?? input?.language);
+  const primaryLanguage = getPrimaryLanguage(languages);
   return {
     name: safeString(input?.name),
     caste_category: safeString(input?.caste_category),
@@ -376,7 +425,8 @@ function normalizeProfile(input) {
     course: safeString(input?.course),
     percentage: toNumber(input?.percentage),
     district: safeString(input?.district),
-    language: safeString(input?.language) || "ta",
+    languages,
+    language: primaryLanguage,
   };
 }
 
