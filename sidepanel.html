@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Athena</title>
+    <link rel="stylesheet" href="styles/sidepanel.css" />
+  </head>
+  <body>
+    <main class="app">
+      <header class="hero">
+        <div>
+          <p class="eyebrow" data-i18n="tagline">
+            Tamil-first Scholarship Agent
+          </p>
+          <h1 data-i18n="app_name">Athena</h1>
+          <p class="subtitle" data-i18n="subtitle">
+            Find and fill scholarships with local AI.
+          </p>
+        </div>
+        <span class="status" id="status">Ready</span>
+      </header>
+
+      <section class="panel profile">
+        <h2 data-i18n="profile_title">Student Profile</h2>
+        <form id="profile-form" autocomplete="off">
+          <div class="field-grid">
+            <label>
+              <span data-i18n="name_label">Name</span>
+              <input
+                type="text"
+                name="name"
+                placeholder="Student name"
+                data-i18n-placeholder="name_placeholder"
+              />
+            </label>
+            <label>
+              <span data-i18n="caste_label">Caste Category</span>
+              <select name="caste_category" required>
+                <option value="">Select</option>
+                <option value="BC">BC</option>
+                <option value="MBC">MBC</option>
+                <option value="SC">SC</option>
+                <option value="ST">ST</option>
+                <option value="OC">OC</option>
+                <option value="OBC">OBC</option>
+              </select>
+            </label>
+            <label>
+              <span data-i18n="income_label">Annual Income (INR)</span>
+              <input
+                type="number"
+                name="annual_income"
+                min="0"
+                placeholder="180000"
+                data-i18n-placeholder="income_placeholder"
+                required
+              />
+            </label>
+            <label>
+              <span data-i18n="course_level_label">Course Level</span>
+              <select name="course_level" required>
+                <option value="">Select</option>
+                <option value="10th">10th</option>
+                <option value="12th">12th</option>
+                <option value="UG">UG</option>
+                <option value="PG">PG</option>
+                <option value="Diploma">Diploma</option>
+                <option value="ITI">ITI</option>
+              </select>
+            </label>
+            <label>
+              <span data-i18n="course_label">Course Name</span>
+              <input
+                type="text"
+                name="course"
+                placeholder="B.Sc., ITI, etc."
+                data-i18n-placeholder="course_placeholder"
+              />
+            </label>
+            <label>
+              <span data-i18n="percentage_label">Percentage</span>
+              <input
+                type="number"
+                name="percentage"
+                min="0"
+                max="100"
+                step="0.1"
+                placeholder="68"
+                data-i18n-placeholder="percentage_placeholder"
+              />
+            </label>
+            <label>
+              <span data-i18n="district_label">District</span>
+              <input
+                type="text"
+                name="district"
+                placeholder="Coimbatore"
+                data-i18n-placeholder="district_placeholder"
+              />
+            </label>
+            <label>
+              <span data-i18n="language_label">Language</span>
+              <select name="language">
+                <option value="ta" selected>Tamil</option>
+                <option value="en">English</option>
+              </select>
+            </label>
+          </div>
+        </form>
+        <div class="profile-actions">
+          <button type="button" id="match-btn" data-i18n="match_button">
+            Find Matches
+          </button>
+          <button
+            type="button"
+            id="save-btn"
+            class="ghost"
+            data-i18n="save_button"
+          >
+            Save Profile
+          </button>
+        </div>
+      </section>
+
+      <section class="panel chat">
+        <h2 data-i18n="chat_title">Ask Athena</h2>
+        <div id="messages" class="messages" role="log" aria-live="polite"></div>
+        <form id="chat-form" class="chat-form">
+          <input
+            id="chat-input"
+            type="text"
+            placeholder="Ask about scholarships..."
+            data-i18n-placeholder="chat_placeholder"
+            required
+          />
+          <button type="submit" data-i18n="send_button">Send</button>
+          <button
+            type="button"
+            id="voice-btn"
+            class="ghost"
+            data-i18n="voice_button"
+          >
+            Voice
+          </button>
+        </form>
+      </section>
+
+      <section class="panel matches">
+        <h2 data-i18n="matches_title">Matches</h2>
+        <ul id="matches-list" class="matches-list"></ul>
+        <p id="matches-empty" class="empty" data-i18n="matches_empty">
+          No matches yet. Use Find Matches.
+        </p>
+      </section>
+    </main>
+    <script src="sidepanel.js"></script>
+  </body>
+</html>

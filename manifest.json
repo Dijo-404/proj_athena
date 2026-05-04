@@ -1,0 +1,27 @@
+{
+  "manifest_version": 3,
+  "name": "Athena",
+  "version": "0.1.0",
+  "description": "Tamil-first Scholarship Agent",
+  "permissions": ["storage", "activeTab", "scripting", "alarms", "tabs"],
+  "host_permissions": ["http://localhost:11434/*"],
+  "side_panel": {
+    "default_path": "sidepanel.html"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["agent/filler.js", "content.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'; connect-src 'self' http://localhost:11434"
+  },
+  "action": {
+    "default_title": "Athena"
+  }
+}

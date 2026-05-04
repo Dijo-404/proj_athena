@@ -1,0 +1,107 @@
+[
+  {
+    "id": "NSP_POST_MATRIC_OBC",
+    "name": "NSP Post-Matric Scholarship for OBC Students",
+    "name_ta": "OBC மாணவர்களுக்கான NSP Post-Matric Scholarship",
+    "amount": 36200,
+    "frequency": "annual",
+    "portal": "https://scholarships.gov.in",
+    "eligibility": {
+      "caste": ["OBC", "MBC"],
+      "max_income": 250000,
+      "course_level": ["UG", "PG", "Diploma"],
+      "min_percentage": null
+    },
+    "deadline": "2026-10-31",
+    "documents_required": [
+      "Caste certificate",
+      "Income certificate",
+      "Mark sheet",
+      "Bank passbook",
+      "Aadhaar card"
+    ]
+  },
+  {
+    "id": "TN_BC_MBC_SCHOLARSHIP",
+    "name": "Tamil Nadu BC/MBC Scholarship",
+    "name_ta": "தமிழ்நாடு BC/MBC உதவித்தொகை",
+    "amount": 20000,
+    "frequency": "annual",
+    "portal": "https://tnscholarship.net",
+    "eligibility": {
+      "caste": ["BC", "MBC"],
+      "max_income": 200000,
+      "course_level": ["UG", "PG", "Diploma", "ITI"],
+      "min_percentage": 50
+    },
+    "deadline": "2026-09-15",
+    "documents_required": [
+      "Community certificate",
+      "Income certificate",
+      "Mark sheet",
+      "Bank passbook"
+    ]
+  },
+  {
+    "id": "TN_EGRANTZ_SC_ST",
+    "name": "Tamil Nadu e-Grantz SC/ST Scholarship",
+    "name_ta": "தமிழ்நாடு e-Grantz SC/ST உதவித்தொகை",
+    "amount": 30000,
+    "frequency": "annual",
+    "portal": "https://egrantz.tn.gov.in",
+    "eligibility": {
+      "caste": ["SC", "ST"],
+      "max_income": 250000,
+      "course_level": ["UG", "PG", "Diploma", "ITI"],
+      "min_percentage": null
+    },
+    "deadline": "2026-11-01",
+    "documents_required": [
+      "Community certificate",
+      "Income certificate",
+      "Mark sheet",
+      "Aadhaar card"
+    ]
+  },
+  {
+    "id": "NSP_PRE_MATRIC_SC_ST",
+    "name": "NSP Pre-Matric Scholarship for SC/ST",
+    "name_ta": "SC/ST மாணவர்களுக்கான NSP Pre-Matric Scholarship",
+    "amount": 12000,
+    "frequency": "annual",
+    "portal": "https://scholarships.gov.in",
+    "eligibility": {
+      "caste": ["SC", "ST"],
+      "max_income": 250000,
+      "course_level": ["10th", "12th"],
+      "min_percentage": 55
+    },
+    "deadline": "2026-08-20",
+    "documents_required": [
+      "Community certificate",
+      "Income certificate",
+      "Mark sheet"
+    ]
+  },
+  {
+    "id": "PM_SCHOLARSHIP_DEF",
+    "name": "Prime Minister Scholarship Scheme",
+    "name_ta": "பிரதமர் உதவித்தொகை திட்டம்",
+    "amount": 48000,
+    "frequency": "annual",
+    "portal": "https://scholarships.gov.in",
+    "eligibility": {
+      "caste": [],
+      "max_income": 350000,
+      "course_level": ["UG", "PG"],
+      "min_percentage": 60
+    },
+    "deadline": "2026-09-30",
+    "documents_required": [
+      "Service certificate",
+      "Income certificate",
+      "Mark sheet",
+      "Bank passbook"
+    ]
+  }
+]
