@@ -3,7 +3,7 @@
   "name": "Athena",
   "version": "0.1.0",
   "description": "Tamil-first Scholarship Agent",
-  "permissions": ["storage", "activeTab", "scripting", "alarms", "tabs"],
+  "permissions": ["storage", "activeTab", "scripting", "alarms", "tabs", "sidePanel"],
   "host_permissions": ["http://localhost:11434/*"],
   "side_panel": {
     "default_path": "sidepanel.html"
