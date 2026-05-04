@@ -9,33 +9,26 @@ This document is the technical source of truth for the Athena submission. It det
 Athena is a Chrome extension that acts as an autonomous agent. The user describes what they need in Tamil; Gemma 4 (running locally via Ollama) plans and executes the task across government scholarship portals.
 
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│                        Chrome Browser                           │
-│                                                                 │
-│  ┌──────────────────┐        ┌──────────────────────────────┐  │
-│  │   Side Panel UI  │        │    Scholarship Portal Tab    │  │
-│  │  (sidepanel.js)  │        │  (scholarships.gov.in etc.)  │  │
-│  │                  │        │                              │  │
-│  │  Tamil voice in  │        │  Content script injected:    │  │
-│  │  Chat interface  │        │  content.js reads DOM,       │  │
-│  │  Status tracker  │        │  executes fill_field() calls │  │
-│  └────────┬─────────┘        └──────────────┬───────────────┘  │
-│           │                                 │                  │
-│           └──────────── background.js ──────┘                  │
-│                    (Service Worker)                             │
-│                    Routes messages                              │
-│                    Manages state                                │
-└─────────────────────┬───────────────────────────────────────────┘
-                      │ HTTP POST localhost:11434
-                      ▼
-           ┌──────────────────────┐
-           │   Ollama + Gemma 4   │
-           │   (gemma3:4b local)  │
-           │                      │
-           │  Function calling    │
-           │  Tamil reasoning     │
-           │  Thinking mode       │
-           └──────────────────────┘
+Chrome Browser
+  |
+  +-- Side Panel UI (sidepanel.js)
+  |       Tamil voice in, Chat interface, Status tracker
+  |
+  +-- Scholarship Portal Tab (scholarships.gov.in etc.)
+  |       Content script injected: content.js reads DOM,
+  |       executes fill_field() calls
+  |
+  +-- background.js (Service Worker)
+      Routes messages, Manages state
+  |
+  v
+  HTTP POST localhost:11434
+  |
+  v
+Ollama + Gemma 4 (gemma3:4b local)
+  - Function calling
+  - Tamil reasoning
+  - Thinking mode
 ```
 
 ---

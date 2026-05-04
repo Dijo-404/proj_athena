@@ -156,10 +156,10 @@ See [ARCHITECTURE.md](./ARCHITECTURE.md) for full technical details.
 
 ## Prize Track Eligibility
 
-- 🌍 **Digital Equity & Inclusivity** — Tamil language, offline access, first-gen students
-- 🦙 **Ollama Special Prize** — Core runtime, airplane mode demo
-- 📚 **Future of Education** — Scholarship access as educational enabler
-- 🏆 **Main Track** — Vision + technical depth + real-world impact
+- **Digital Equity & Inclusivity** — Tamil language, offline access, first-gen students
+- **Ollama Special Prize** — Core runtime, airplane mode demo
+- **Future of Education** — Scholarship access as educational enabler
+- **Main Track** — Vision + technical depth + real-world impact
 
 ---
 
