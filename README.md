@@ -147,16 +147,16 @@ athena/
 
 ```mermaid
 flowchart TD
-  A[Student speaks Tamil] --> B[Web Speech API (ta-IN)]
-  B --> C[Gemma 4 via Ollama\nFunction calling + Tamil reasoning]
-  C --> D[match_scholarships(profile)\nRanked JSON list]
-  C --> E[check_eligibility(scheme_id)\nEligibility reasoning]
-  C --> F[fill_field(selector, value)\nDOM action]
-  D --> G[Content script executes on portal]
+  A["Student speaks Tamil"] --> B["Web Speech API (ta-IN)"]
+  B --> C["Gemma 4 via Ollama<br/>Function calling + Tamil reasoning"]
+  C --> D["match_scholarships(profile)<br/>Ranked JSON list"]
+  C --> E["check_eligibility(scheme_id)<br/>Eligibility reasoning"]
+  C --> F["fill_field(selector, value)<br/>DOM action"]
+  D --> G["Content script executes on portal"]
   E --> G
   F --> G
-  G --> H[Application submitted]
-  H --> I[Status saved to chrome.storage.local]
+  G --> H["Application submitted"]
+  H --> I["Status saved to chrome.storage.local"]
 ```
 
 See [ARCHITECTURE.md](./ARCHITECTURE.md) for full technical details.
