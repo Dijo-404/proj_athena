@@ -1,3 +1,6 @@
+// Database and matching functions are loaded via manifest.json content_scripts
+// They're exposed globally by the background script via chrome.runtime.connect
+
 const statusEl = document.getElementById("status");
 const profileForm = document.getElementById("profile-form");
 const chatForm = document.getElementById("chat-form");
@@ -23,8 +26,8 @@ const LANGUAGE_LABELS = {
   en: "English",
 };
 
-const USE_LOCAL_MODEL = true;
-const ALLOW_OLLAMA_FALLBACK = false;
+const USE_LOCAL_MODEL = false;
+const ALLOW_OLLAMA_FALLBACK = true;
 const LOCAL_MODEL_IMPORT_URL = "webllm.js";
 const LOCAL_MODEL_ID = "gemma-2-2b-it-q4f16_1-MLC";
 const LOCAL_MODEL_LABEL = "Gemma 2B";

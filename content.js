@@ -7,8 +7,9 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   sendResponse(result);
 });
 
-const DOM_UPDATE_DEBOUNCE_MS = 600;
+const DOM_UPDATE_DEBOUNCE_MS = 1000;
 let domUpdateTimer = null;
+let lastDomContext = null;
 
 if (document.readyState === "loading") {
   document.addEventListener("DOMContentLoaded", initDomObserver);
@@ -39,9 +40,17 @@ function scheduleDomUpdate() {
 
 function sendDomUpdate() {
   try {
+    const context = readPageContext();
+    // Only send if context actually changed
+    const contextStr = JSON.stringify(context);
+    if (contextStr === lastDomContext) {
+      return;
+    }
+    lastDomContext = contextStr;
+
     chrome.runtime.sendMessage({
       type: "DOM_UPDATED",
-      payload: readPageContext(),
+      payload: context,
     });
   } catch (error) {
     // Ignore DOM update failures

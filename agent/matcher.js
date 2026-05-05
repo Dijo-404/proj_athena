@@ -180,3 +180,6 @@ function matchesPercentage(minPercentage, percentage) {
 self.matchScholarships = matchScholarships;
 self.checkEligibility = checkEligibility;
 self.getDeadline = getDeadline;
+window.matchScholarships = matchScholarships;
+window.checkEligibility = checkEligibility;
+window.getDeadline = getDeadline;

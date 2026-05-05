@@ -41,10 +41,11 @@ const AthenaTracker = {
       updated_at: new Date().toISOString(),
     };
 
-    await AthenaDB.upsertApplication(entry);
-    const stored = await loadStoredApplications();
-    stored[entry.scheme_id] = entry;
-    await saveStoredApplications(stored);
+    // Save to both IndexedDB and chrome.storage.local atomically
+    await Promise.all([
+      AthenaDB.upsertApplication(entry),
+      saveStoredApplication(entry),
+    ]);
 
     return { ok: true, application: entry };
   },
@@ -115,6 +116,12 @@ function saveStoredApplications(map) {
   return new Promise((resolve) => {
     chrome.storage.local.set({ [STORAGE_KEY]: map }, () => resolve());
   });
+}
+
+async function saveStoredApplication(entry) {
+  const stored = await loadStoredApplications();
+  stored[entry.scheme_id] = entry;
+  return saveStoredApplications(stored);
 }
 
 self.AthenaTracker = AthenaTracker;

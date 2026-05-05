@@ -241,7 +241,11 @@ async function executeAgentLoop(userMessage, profile) {
         const toolName = toolCall.function?.name || "";
         const toolArgs = parseToolArguments(toolCall.function?.arguments);
         const result = await executeTool(toolName, toolArgs);
-        messages.push({ role: "tool", content: JSON.stringify(result) });
+        messages.push({
+          role: "tool",
+          content: JSON.stringify(result),
+          tool_call_id: toolCall.id,
+        });
       }
       continue;
     }
@@ -306,7 +310,25 @@ function getActiveTab() {
   });
 }
 
+async function checkOllamaConnection() {
+  try {
+    const response = await fetch(OLLAMA_URL.replace("/api/chat", "/api/tags"), {
+      method: "GET",
+      headers: { "Content-Type": "application/json" },
+    });
+    return response.ok;
+  } catch (error) {
+    return false;
+  }
+}
+
 async function queryGemma(messages, tools) {
+  // Check if Ollama is running
+  const isConnected = await checkOllamaConnection();
+  if (!isConnected) {
+    throw new Error("Ollama is not running. Please start Ollama on localhost:11434");
+  }
+
   const response = await fetch(OLLAMA_URL, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -447,6 +469,11 @@ function toNumber(value) {
 
 async function warmupModel() {
   try {
+    const isConnected = await checkOllamaConnection();
+    if (!isConnected) {
+      console.log("Ollama not available for warmup");
+      return;
+    }
     await queryGemma([{ role: "user", content: "hello" }], []);
   } catch (error) {
     // Ignore warmup failures

@@ -157,3 +157,4 @@ const AthenaDB = (() => {
 })();
 
 self.AthenaDB = AthenaDB;
+window.AthenaDB = AthenaDB;

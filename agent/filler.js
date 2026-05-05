@@ -90,12 +90,13 @@ const AthenaFiller = (() => {
 
   function setValue(element, value) {
     if (element.disabled) {
-      return;
+      return { ok: false, error: "Element is disabled." };
     }
 
     element.focus();
     element.value = value;
     dispatchInputEvents(element);
+    return { ok: true, action: "type" };
   }
 
   function selectOption(element, value) {
