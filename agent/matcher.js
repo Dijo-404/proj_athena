@@ -134,7 +134,7 @@ function evaluateScheme(scheme, profile) {
     score -= 1;
   }
 
-  return { eligible: missing.length === 0, reasons, missing, score };
+  return { eligible: true, reasons, missing, score };
 }
 
 function matchesCaste(allowed, caste) {

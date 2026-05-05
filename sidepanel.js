@@ -11,9 +11,7 @@ const refreshAppsBtn = document.getElementById("refresh-apps-btn");
 const matchBtn = document.getElementById("match-btn");
 const saveBtn = document.getElementById("save-btn");
 const voiceBtn = document.getElementById("voice-btn");
-const languageInputs = document.querySelectorAll(
-  'input[name="languages"]',
-);
+const languageInputs = document.querySelectorAll('input[name="languages"]');
 
 const LANGUAGE_ORDER = ["ta", "en"];
 const LANGUAGE_SPEECH = {
@@ -28,7 +26,7 @@ const LANGUAGE_LABELS = {
 const USE_LOCAL_MODEL = true;
 const ALLOW_OLLAMA_FALLBACK = false;
 const LOCAL_MODEL_IMPORT_URL = "webllm.js";
-const LOCAL_MODEL_ID = "gemma-2b-it-q4f16_1";
+const LOCAL_MODEL_ID = "gemma-2-2b-it-q4f16_1-MLC";
 const LOCAL_MODEL_LABEL = "Gemma 2B";
 const MAX_TOOL_STEPS = 6;
 
@@ -803,7 +801,8 @@ function getStatusLabel(status) {
 }
 
 function initVoiceInput() {
-  const SpeechRecognition = window.webkitSpeechRecognition;
+  const SpeechRecognition =
+    window.SpeechRecognition || window.webkitSpeechRecognition;
   if (!SpeechRecognition) {
     voiceBtn.disabled = true;
     voiceBtn.title = "Voice input not supported";
@@ -831,13 +830,23 @@ function initVoiceInput() {
     }
   };
 
-  voiceBtn.addEventListener("click", () => {
+  voiceBtn.addEventListener("click", async () => {
+    try {
+      await navigator.mediaDevices.getUserMedia({ audio: true });
+    } catch (err) {
+      setStatus("Mic access denied", "error");
+      return;
+    }
     const selectedLanguages = ensureLanguagesSelected();
     const primaryLanguage = getPrimaryLanguage(selectedLanguages);
-    recognition.lang =
-      LANGUAGE_SPEECH[primaryLanguage] || LANGUAGE_SPEECH.en;
+    recognition.lang = LANGUAGE_SPEECH[primaryLanguage] || LANGUAGE_SPEECH.en;
     setStatus("Listening...", "recording");
-    recognition.start();
+    try {
+      recognition.start();
+    } catch (e) {
+      console.error(e);
+      setStatus("Voice input error", "error");
+    }
   });
 }
 
@@ -878,6 +887,9 @@ function inferBrowserLanguage() {
 }
 
 function toNumber(value) {
+  if (value === null || value === undefined || value === "") {
+    return null;
+  }
   const parsed = Number(value);
   return Number.isFinite(parsed) ? parsed : null;
 }

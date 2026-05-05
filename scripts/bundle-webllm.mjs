@@ -10,7 +10,7 @@ export async function bundle() {
   await esbuild.build({
     entryPoints: [path.join(root, "node_modules/@mlc-ai/web-llm/lib/index.js")],
     bundle: true,
-    format: "iife",
+    format: "esm",
     platform: "browser",
     target: "chrome120",
     outfile: path.join(distRoot, "webllm.js"),
