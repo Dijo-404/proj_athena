@@ -1,3 +1,5 @@
+self.window = self;
+
 importScripts("data/db.js", "agent/matcher.js", "agent/tracker.js");
 
 chrome.runtime.onInstalled.addListener(() => {

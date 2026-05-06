@@ -3,7 +3,7 @@
   "name": "Athena",
   "version": "0.1.0",
   "description": "Tamil-first Scholarship Agent",
-  "permissions": ["storage", "activeTab", "scripting", "alarms", "tabs", "sidePanel"],
+  "permissions": ["storage", "unlimitedStorage", "activeTab", "scripting", "alarms", "tabs", "sidePanel"],
   "host_permissions": [],
   "side_panel": {
     "default_path": "sidepanel.html"
@@ -13,18 +13,13 @@
       "matches": ["<all_urls>"],
       "js": ["agent/filler.js", "content.js"],
       "run_at": "document_idle"
-    },
-    {
-      "matches": ["sidepanel://*"],
-      "js": ["data/db.js", "agent/matcher.js", "agent/tracker.js"],
-      "run_at": "document_start"
     }
   ],
   "background": {
     "service_worker": "background.js"
   },
   "content_security_policy": {
-    "extension_pages": "script-src 'self' 'wasm-unsafe-eval'; object-src 'self'; connect-src 'self' http://localhost:11434 https://* wss://* data: blob:"
+    "extension_pages": "script-src 'self' 'wasm-unsafe-eval'; object-src 'self'; connect-src 'self' http://localhost:11434 https://* wss://* data: blob: chrome-extension://*; worker-src 'self'"
   },
   "icons": {
     "48": "icons/icon48.png",
