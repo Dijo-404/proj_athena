@@ -51,8 +51,9 @@ const AthenaDB = (() => {
       return { ok: false, error: `Failed to load schemes: ${response.status}` };
     }
 
-    const schemes = await response.json();
-    await putMany(db, "schemes", Array.isArray(schemes) ? schemes : []);
+    const parsed = await response.json();
+    const schemes = Array.isArray(parsed) ? parsed : [];
+    await putMany(db, "schemes", schemes);
 
     return { ok: true, count: schemes.length };
   }

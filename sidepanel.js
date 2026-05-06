@@ -30,7 +30,7 @@ const USE_LOCAL_MODEL = true;
 const ALLOW_OLLAMA_FALLBACK = true;
 const LOCAL_MODEL_IMPORT_URL = "webllm.js";
 const LOCAL_MODEL_ID = "gemma-2-2b-it-q4f16_1-MLC";
-const LOCAL_MODEL_LABEL = "Gemma 2B";
+const LOCAL_MODEL_LABEL = "Gemma 2 2B";
 const MAX_TOOL_STEPS = 6;
 
 const TOOL_SCHEMA = [

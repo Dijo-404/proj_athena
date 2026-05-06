@@ -4,7 +4,7 @@
   "version": "0.1.0",
   "description": "Tamil-first Scholarship Agent",
   "permissions": ["storage", "unlimitedStorage", "activeTab", "scripting", "alarms", "tabs", "sidePanel"],
-  "host_permissions": [],
+  "host_permissions": ["http://localhost:11434/*"],
   "side_panel": {
     "default_path": "sidepanel.html"
   },

@@ -2,13 +2,6 @@ self.window = self;
 
 importScripts("data/db.js", "agent/matcher.js", "agent/tracker.js");
 
-chrome.runtime.onInstalled.addListener(() => {
-  // Allow opening the side panel by clicking the extension icon
-  if (chrome.sidePanel) {
-    chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true }).catch((error) => console.error(error));
-  }
-});
-
 const OLLAMA_URL = "http://localhost:11434/api/chat";
 const MODEL_NAME = "gemma3:4b";
 const MAX_TOOL_STEPS = 6;
@@ -114,6 +107,11 @@ const TOOL_SCHEMA = [
 ];
 
 chrome.runtime.onInstalled.addListener(async () => {
+  if (chrome.sidePanel) {
+    chrome.sidePanel
+      .setPanelBehavior({ openPanelOnActionClick: true })
+      .catch((error) => console.error(error));
+  }
   await AthenaDB.initDB();
   await AthenaDB.seedSchemesIfEmpty();
   chrome.alarms.create("syncSchemes", { periodInMinutes: 1440 });

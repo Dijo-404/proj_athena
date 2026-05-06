@@ -126,7 +126,6 @@ athena/
 ├── locales/
 │   ├── ta.json            # Tamil UI strings
 │   └── en.json            # English UI strings
-├── ARCHITECTURE.md        # Deep technical documentation
 └── KAGGLE_WRITEUP.md      # Competition submission writeup
 ```
 
@@ -158,8 +157,6 @@ flowchart TD
   G --> H["Application submitted"]
   H --> I["Status saved to chrome.storage.local"]
 ```
-
-See [ARCHITECTURE.md](./ARCHITECTURE.md) for full technical details.
 
 ---
 

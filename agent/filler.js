@@ -36,8 +36,7 @@ const AthenaFiller = (() => {
     }
 
     if (action === "type") {
-      setValue(element, value);
-      return { ok: true, action: "type" };
+      return setValue(element, value);
     }
 
     return { ok: false, error: "Unsupported action." };
@@ -94,9 +93,31 @@ const AthenaFiller = (() => {
     }
 
     element.focus();
+
+    const inputType = (element.getAttribute("type") || "").toLowerCase();
+    if (inputType === "checkbox" || inputType === "radio") {
+      element.checked = parseBoolean(value);
+      dispatchInputEvents(element);
+      return { ok: true, action: "type", checked: element.checked };
+    }
+
     element.value = value;
     dispatchInputEvents(element);
     return { ok: true, action: "type" };
+  }
+
+  function parseBoolean(value) {
+    if (typeof value === "boolean") {
+      return value;
+    }
+    if (typeof value === "number") {
+      return value !== 0;
+    }
+    const normalized = String(value ?? "").trim().toLowerCase();
+    if (!normalized) {
+      return false;
+    }
+    return ["true", "yes", "1", "on", "checked", "y"].includes(normalized);
   }
 
   function selectOption(element, value) {
