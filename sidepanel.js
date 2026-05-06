@@ -26,7 +26,7 @@ const LANGUAGE_LABELS = {
   en: "English",
 };
 
-const USE_LOCAL_MODEL = false;
+const USE_LOCAL_MODEL = true;
 const ALLOW_OLLAMA_FALLBACK = true;
 const LOCAL_MODEL_IMPORT_URL = "webllm.js";
 const LOCAL_MODEL_ID = "gemma-2-2b-it-q4f16_1-MLC";
