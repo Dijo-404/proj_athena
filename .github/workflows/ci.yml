@@ -20,6 +20,9 @@ jobs:
       - name: Ensure zip is available
         run: sudo apt-get update && sudo apt-get install -y zip
 
+      - name: Install dependencies
+        run: npm ci
+
       - name: Generate icons
         run: npm run icons
 
