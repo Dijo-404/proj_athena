@@ -10,12 +10,24 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 const DOM_UPDATE_DEBOUNCE_MS = 1000;
 let domUpdateTimer = null;
 let lastDomContext = null;
+let domObserver = null;
 
 if (document.readyState === "loading") {
   document.addEventListener("DOMContentLoaded", initDomObserver);
 } else {
   initDomObserver();
 }
+
+window.addEventListener("pagehide", () => {
+  if (domObserver) {
+    domObserver.disconnect();
+    domObserver = null;
+  }
+  if (domUpdateTimer) {
+    clearTimeout(domUpdateTimer);
+    domUpdateTimer = null;
+  }
+});
 
 function initDomObserver() {
   sendDomUpdate();
@@ -24,11 +36,11 @@ function initDomObserver() {
     return;
   }
 
-  const observer = new MutationObserver(() => {
+  domObserver = new MutationObserver(() => {
     scheduleDomUpdate();
   });
 
-  observer.observe(document.body, { childList: true, subtree: true });
+  domObserver.observe(document.body, { childList: true, subtree: true });
 }
 
 function scheduleDomUpdate() {

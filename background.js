@@ -166,13 +166,25 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     return true;
   }
 
+  if (message.type === "PING_OLLAMA") {
+    checkOllamaConnection().then((connected) =>
+      sendResponse({ ok: true, connected }),
+    );
+    return true;
+  }
+
   if (message.type === "DOM_UPDATED") {
     const snapshot = {
       ...(message.payload || {}),
       updated_at: new Date().toISOString(),
     };
     chrome.storage.local.set({ lastDomContext: snapshot }, () => {
-      sendResponse({ ok: true });
+      const err = chrome.runtime.lastError;
+      if (err) {
+        sendResponse({ ok: false, error: err.message });
+      } else {
+        sendResponse({ ok: true });
+      }
     });
     return true;
   }
@@ -205,13 +217,13 @@ async function handleLocalMatch(payload) {
   await AthenaDB.seedSchemesIfEmpty();
 
   const profile = normalizeProfile(payload?.profile || {});
-  const matches = await matchScholarships(profile);
+  const result = await matchScholarships(profile);
 
-  if (matches && matches.error) {
-    return { ok: false, error: matches.error };
+  if (!result || result.ok === false) {
+    return { ok: false, error: result?.error || "Match failed." };
   }
 
-  return { ok: true, matches: Array.isArray(matches) ? matches : [] };
+  return { ok: true, matches: result.matches || [] };
 }
 
 async function executeAgentLoop(userMessage, profile) {
@@ -471,7 +483,6 @@ async function warmupModel() {
   try {
     const isConnected = await checkOllamaConnection();
     if (!isConnected) {
-      console.log("Ollama not available for warmup");
       return;
     }
     await queryGemma([{ role: "user", content: "hello" }], []);

@@ -129,7 +129,7 @@ const TOOL_SCHEMA = [
 ];
 
 let localEnginePromise = null;
-let localDbReady = false;
+let localDbPromise = null;
 
 let activeStrings = {};
 let cachedMatches = [];
@@ -145,6 +145,7 @@ setStatus("Ready", "idle");
 loadProfile();
 loadLocale();
 refreshApplications();
+detectInferenceCapability();
 
 chatForm.addEventListener("submit", async (event) => {
   event.preventDefault();
@@ -165,6 +166,7 @@ chatForm.addEventListener("submit", async (event) => {
   if (USE_LOCAL_MODEL) {
     response = await sendMessageToLocalModel(message, profile);
     if (!response.ok && ALLOW_OLLAMA_FALLBACK) {
+      setStatus(getString("status_using_ollama", "Using Ollama..."), "busy");
       response = await sendMessageToBackground("CHAT_REQUEST", {
         message,
         profile,
@@ -178,8 +180,12 @@ chatForm.addEventListener("submit", async (event) => {
   }
 
   if (!response || !response.ok) {
+    const friendly = getString("error_no_inference", "");
     setStatus(response?.error || "Request failed", "error");
-    addMessage("assistant", response?.error || "Request failed.");
+    addMessage(
+      "assistant",
+      friendly || response?.error || "Request failed.",
+    );
     return;
   }
 
@@ -209,9 +215,18 @@ matchBtn.addEventListener("click", async () => {
   setStatus("Ready", "idle");
 });
 
-saveBtn.addEventListener("click", () => {
-  saveProfile(readProfileFromForm());
-  setStatus("Profile saved", "idle");
+saveBtn.addEventListener("click", async () => {
+  try {
+    await saveProfile(readProfileFromForm());
+    setStatus("Profile saved", "idle");
+    setTimeout(() => {
+      if (statusEl.textContent === "Profile saved") {
+        setStatus("Ready", "idle");
+      }
+    }, 2000);
+  } catch (err) {
+    setStatus("Save failed", "error");
+  }
 });
 
 refreshAppsBtn.addEventListener("click", () => {
@@ -347,17 +362,25 @@ function parseToolArguments(rawArgs) {
 }
 
 async function ensureLocalDb() {
-  if (localDbReady) {
-    return;
+  if (localDbPromise) {
+    return localDbPromise;
   }
 
   if (!window.AthenaDB) {
     throw new Error("Local database helpers are not available.");
   }
 
-  await window.AthenaDB.initDB();
-  await window.AthenaDB.seedSchemesIfEmpty();
-  localDbReady = true;
+  localDbPromise = (async () => {
+    try {
+      await window.AthenaDB.initDB();
+      await window.AthenaDB.seedSchemesIfEmpty();
+    } catch (err) {
+      localDbPromise = null;
+      throw err;
+    }
+  })();
+
+  return localDbPromise;
 }
 
 async function ensureLocalModel() {
@@ -818,7 +841,11 @@ function initVoiceInput() {
   recognition.interimResults = false;
 
   recognition.onresult = (event) => {
-    const transcript = event.results[0][0].transcript;
+    const transcript = event.results?.[0]?.[0]?.transcript;
+    if (!transcript) {
+      setStatus("Ready", "idle");
+      return;
+    }
     chatInput.value = transcript;
     chatForm.requestSubmit();
   };
@@ -853,6 +880,24 @@ function initVoiceInput() {
   });
 }
 
+async function detectInferenceCapability() {
+  const hasWebGPU = "gpu" in navigator;
+  let hasOllama = false;
+  try {
+    const resp = await sendMessageToBackground("PING_OLLAMA");
+    hasOllama = !!(resp && resp.ok && resp.connected);
+  } catch (_) {
+    /* swallow */
+  }
+
+  if (!hasWebGPU && !hasOllama) {
+    setStatus(
+      getString("status_offline", "Local match only (no LLM)"),
+      "error",
+    );
+  }
+}
+
 function sendMessageToBackground(type, payload) {
   return new Promise((resolve) => {
     chrome.runtime.sendMessage({ type, payload }, (response) => {
@@ -866,15 +911,23 @@ function sendMessageToBackground(type, payload) {
 }
 
 function saveProfile(profile) {
-  chrome.storage.local.set({ studentProfile: profile });
+  return chrome.storage.local.set({ studentProfile: profile }).catch((err) => {
+    console.warn("saveProfile failed", err);
+    throw err;
+  });
 }
 
 function loadProfile() {
-  chrome.storage.local.get("studentProfile", (result) => {
-    if (result && result.studentProfile) {
-      fillProfileForm(result.studentProfile);
-    }
-  });
+  chrome.storage.local.get("studentProfile").then(
+    (result) => {
+      if (result && result.studentProfile) {
+        fillProfileForm(result.studentProfile);
+      }
+    },
+    (err) => {
+      console.warn("loadProfile failed", err);
+    },
+  );
 }
 
 function normalizeString(value) {

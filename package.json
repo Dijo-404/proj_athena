@@ -1,6 +1,6 @@
 {
   "name": "athena-extension",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "private": true,
   "type": "module",
   "dependencies": {
@@ -9,9 +9,11 @@
   "scripts": {
     "build": "node scripts/build.mjs",
     "package": "node scripts/package.mjs",
-    "icons": "node scripts/generate-icons.mjs"
+    "icons": "node scripts/generate-icons.mjs",
+    "validate": "node scripts/validate.mjs"
   },
   "devDependencies": {
+    "archiver": "^7.0.1",
     "esbuild": "^0.28.0",
     "url": "^0.11.4"
   }

@@ -1,34 +1,38 @@
 async function matchScholarships(profile) {
-  const schemes = await AthenaDB.getAllSchemes();
-  const matches = [];
+  try {
+    const schemes = await AthenaDB.getAllSchemes();
+    const matches = [];
 
-  schemes.forEach((scheme) => {
-    const evaluation = evaluateScheme(scheme, profile);
-    if (!evaluation.eligible) {
-      return;
-    }
+    schemes.forEach((scheme) => {
+      const evaluation = evaluateScheme(scheme, profile);
+      if (!evaluation.eligible) {
+        return;
+      }
 
-    matches.push({
-      id: scheme.id,
-      name: scheme.name,
-      name_ta: scheme.name_ta,
-      amount: scheme.amount,
-      frequency: scheme.frequency,
-      portal: scheme.portal,
-      deadline: scheme.deadline,
-      reasons: evaluation.reasons,
-      score: evaluation.score,
+      matches.push({
+        id: scheme.id,
+        name: scheme.name,
+        name_ta: scheme.name_ta,
+        amount: scheme.amount,
+        frequency: scheme.frequency,
+        portal: scheme.portal,
+        deadline: scheme.deadline,
+        reasons: evaluation.reasons,
+        score: evaluation.score,
+      });
     });
-  });
 
-  matches.sort((a, b) => {
-    if (b.score !== a.score) {
-      return b.score - a.score;
-    }
-    return (b.amount || 0) - (a.amount || 0);
-  });
+    matches.sort((a, b) => {
+      if (b.score !== a.score) {
+        return b.score - a.score;
+      }
+      return (b.amount || 0) - (a.amount || 0);
+    });
 
-  return matches.slice(0, 8);
+    return { ok: true, matches: matches.slice(0, 8) };
+  } catch (err) {
+    return { ok: false, error: err?.message || "Match failed." };
+  }
 }
 
 async function checkEligibility(schemeId, studentProfile) {

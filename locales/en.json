@@ -39,5 +39,8 @@
   "status_pending": "Pending",
   "status_submitted": "Submitted",
   "status_approved": "Approved",
-  "status_rejected": "Rejected"
+  "status_rejected": "Rejected",
+  "status_offline": "Local match only (no LLM)",
+  "status_using_ollama": "Using Ollama...",
+  "error_no_inference": "I can't chat without an AI model. Make sure your browser supports WebGPU (Chrome 113+) or run Ollama locally on port 11434. You can still use Find Matches for offline scholarship search."
 }

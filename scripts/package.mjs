@@ -1,28 +1,27 @@
 import fs from "fs/promises";
+import { createWriteStream } from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
-import { spawnSync } from "child_process";
+import archiver from "archiver";
 import { build } from "./build.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const distRoot = path.join(root, "dist");
 const zipPath = path.join(distRoot, "athena.zip");
+const sourceDir = path.join(distRoot, "athena");
 
 await build();
 await fs.rm(zipPath, { force: true });
 
-const result = spawnSync("zip", ["-r", "athena.zip", "athena"], {
-  cwd: distRoot,
-  stdio: "inherit",
+await new Promise((resolve, reject) => {
+  const output = createWriteStream(zipPath);
+  const archive = archiver("zip", { zlib: { level: 9 } });
+  output.on("close", resolve);
+  output.on("error", reject);
+  archive.on("error", reject);
+  archive.pipe(output);
+  archive.directory(sourceDir, "athena");
+  archive.finalize();
 });
 
-if (result.error && result.error.code === "ENOENT") {
-  console.error(
-    "zip CLI not found. Install zip or use 7z to create athena.zip.",
-  );
-  process.exit(1);
-}
-
-if (result.status !== 0) {
-  process.exit(result.status ?? 1);
-}
+console.log(`Packaged ${zipPath}`);
