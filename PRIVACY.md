@@ -22,7 +22,11 @@ Uninstalling the extension or clearing browser data removes everything.
 Athena makes network requests only to:
 
 - **`http://localhost:11434`** — If you have installed Ollama on your own machine, Athena uses it as a fallback when WebGPU is unavailable. The request never leaves your computer.
-- **WebLLM model weights** — On first chat, the WebLLM library downloads Gemma 2 2B model weights from `huggingface.co` and `raw.githubusercontent.com`. Model files are then cached in your browser and reused offline. Your data is never sent to those domains; only the public model files are downloaded.
+- **WebLLM model weights** — On first chat, the WebLLM library downloads Gemma 2 2B model weights from `huggingface.co` and `raw.githubusercontent.com` (and their CDN subdomains on `*.hf.co`). Model files are then cached in your browser and reused offline. Your data is never sent to those domains; only the public model files are downloaded.
+
+## Voice input
+
+The voice button uses Chrome's Web Speech API. In Chrome, this **sends your microphone audio to Google's cloud servers for speech recognition** — your spoken words leave the device. The recognised transcript is returned to Athena and used only as text input to the chat. If you do not want voice data to reach Google, do not use the voice button — the rest of Athena works fully offline.
 
 There are no other network endpoints.
 

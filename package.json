@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "dependencies": {
-    "@mlc-ai/web-llm": "^0.2.0"
+    "@mlc-ai/web-llm": "^0.2.83"
   },
   "scripts": {
     "build": "node scripts/build.mjs",
@@ -13,6 +13,9 @@
     "validate": "node scripts/validate.mjs"
   },
   "devDependencies": {
+    "@fontsource-variable/fraunces": "^5.2.9",
+    "@fontsource-variable/plus-jakarta-sans": "^5.2.8",
+    "@fontsource/noto-serif-tamil": "^5.2.9",
     "archiver": "^7.0.1",
     "esbuild": "^0.28.0",
     "url": "^0.11.4"

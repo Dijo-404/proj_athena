@@ -4,7 +4,7 @@ import { fileURLToPath } from "url";
 import zlib from "zlib";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const iconsDir = path.join(root, "icons");
+const iconsDir = path.join(root, "src", "icons");
 
 const color = [15, 118, 110, 255];
 

@@ -3,9 +3,10 @@ import path from "path";
 import { fileURLToPath } from "url";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
+const srcDir = path.join(root, "src");
 const errors = [];
 
-const manifestPath = path.join(root, "manifest.json");
+const manifestPath = path.join(srcDir, "manifest.json");
 const manifest = JSON.parse(await fs.readFile(manifestPath, "utf8"));
 if (manifest.manifest_version !== 3) errors.push("manifest_version must be 3");
 if (!manifest.name) errors.push("manifest.name missing");
@@ -18,17 +19,17 @@ if (!manifest.icons?.["48"] || !manifest.icons?.["128"])
 if (!manifest.side_panel?.default_path)
   errors.push("side_panel.default_path missing");
 
-const html = await fs.readFile(path.join(root, "sidepanel.html"), "utf8");
+const html = await fs.readFile(path.join(srcDir, "sidepanel.html"), "utf8");
 const i18nKeys = new Set();
 for (const m of html.matchAll(/data-i18n(?:-placeholder)?="([^"]+)"/g)) {
   i18nKeys.add(m[1]);
 }
 
 const en = JSON.parse(
-  await fs.readFile(path.join(root, "locales/en.json"), "utf8"),
+  await fs.readFile(path.join(srcDir, "locales/en.json"), "utf8"),
 );
 const ta = JSON.parse(
-  await fs.readFile(path.join(root, "locales/ta.json"), "utf8"),
+  await fs.readFile(path.join(srcDir, "locales/ta.json"), "utf8"),
 );
 
 for (const key of i18nKeys) {
@@ -59,7 +60,7 @@ for (const m of html.matchAll(/(?:src|href)="([^"#?]+)"/g)) {
 }
 for (const ref of fileRefs) {
   try {
-    await fs.access(path.join(root, ref));
+    await fs.access(path.join(srcDir, ref));
   } catch (_) {
     errors.push(`File referenced in sidepanel.html not found: ${ref}`);
   }
@@ -67,15 +68,16 @@ for (const ref of fileRefs) {
 
 for (const iconRef of Object.values(manifest.icons || {})) {
   try {
-    await fs.access(path.join(root, iconRef));
+    await fs.access(path.join(srcDir, iconRef));
   } catch (_) {
     errors.push(`Icon file not found: ${iconRef}`);
   }
 }
 
-if (manifest.version !== JSON.parse(
+const pkg = JSON.parse(
   await fs.readFile(path.join(root, "package.json"), "utf8"),
-).version) {
+);
+if (manifest.version !== pkg.version) {
   errors.push("manifest.json version does not match package.json version");
 }
 

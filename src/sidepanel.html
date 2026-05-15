@@ -1,0 +1,338 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Athena</title>
+    <link rel="stylesheet" href="styles/sidepanel.css" />
+  </head>
+  <body>
+    <nav class="global-nav" aria-label="Global">
+      <span class="global-nav-brand">
+        <span class="brand-mark" aria-hidden="true">A</span>
+        <span class="brand-name">Athena</span>
+        <span class="brand-sub">est.<span class="brand-year">MMXXVI</span></span>
+      </span>
+      <span class="status" id="status" data-tone="idle">Ready</span>
+    </nav>
+
+    <div class="sub-nav" role="banner">
+      <span class="sub-nav-title" data-i18n="tagline"
+        >Tamil-first Scholarship Agent</span
+      >
+      <button
+        type="button"
+        id="save-btn"
+        class="btn btn-primary"
+        data-i18n="save_button"
+      >
+        Save Profile
+      </button>
+    </div>
+
+    <main class="app">
+      <section class="tile tile-light tile-hero">
+        <p class="eyebrow" data-i18n="tagline">
+          Tamil-first Scholarship Agent
+        </p>
+        <h1 class="hero-display">
+          <span class="hero-display-word" data-i18n="app_name">Athena</span>
+          <span class="hero-display-tail" aria-hidden="true">,</span>
+        </h1>
+        <p class="lead" data-i18n="subtitle">
+          Find and fill scholarships with local AI.
+        </p>
+        <p class="hero-meta" aria-hidden="true">
+          <span class="hero-meta-roman">№ 01</span>
+          <span class="hero-meta-rule"></span>
+          <span class="hero-meta-tag">Local Inference · Tamil First</span>
+        </p>
+      </section>
+
+      <p class="ornament" aria-hidden="true">⁂</p>
+
+      <section class="tile tile-parchment panel profile" aria-labelledby="profile-heading">
+        <header class="tile-head">
+          <span class="chapter-mark" aria-hidden="true">I.</span>
+          <h2 id="profile-heading" class="display-md" data-i18n="profile_title">
+            Student Profile
+          </h2>
+          <p class="tile-sub">A few details. Stays on your device.</p>
+        </header>
+
+        <form id="profile-form" autocomplete="off">
+          <div class="field-grid">
+            <label class="field">
+              <span class="field-label" data-i18n="name_label">Name</span>
+              <input
+                type="text"
+                name="name"
+                class="text-input"
+                placeholder="Student name"
+                data-i18n-placeholder="name_placeholder"
+              />
+            </label>
+
+            <label class="field">
+              <span class="field-label" data-i18n="caste_label"
+                >Caste Category</span
+              >
+              <select name="caste_category" class="text-input" required>
+                <option value="">Select</option>
+                <option value="BC">BC</option>
+                <option value="MBC">MBC</option>
+                <option value="SC">SC</option>
+                <option value="ST">ST</option>
+                <option value="OC">OC</option>
+                <option value="OBC">OBC</option>
+              </select>
+            </label>
+
+            <label class="field">
+              <span class="field-label" data-i18n="income_label"
+                >Annual Income (INR)</span
+              >
+              <input
+                type="number"
+                name="annual_income"
+                class="text-input"
+                min="0"
+                placeholder="180000"
+                data-i18n-placeholder="income_placeholder"
+                required
+              />
+            </label>
+
+            <label class="field">
+              <span class="field-label" data-i18n="course_level_label"
+                >Course Level</span
+              >
+              <select name="course_level" class="text-input" required>
+                <option value="">Select</option>
+                <option value="10th">10th</option>
+                <option value="12th">12th</option>
+                <option value="UG">UG</option>
+                <option value="PG">PG</option>
+                <option value="Diploma">Diploma</option>
+                <option value="ITI">ITI</option>
+              </select>
+            </label>
+
+            <label class="field">
+              <span class="field-label" data-i18n="course_label"
+                >Course Name</span
+              >
+              <input
+                type="text"
+                name="course"
+                class="text-input"
+                placeholder="B.Sc., ITI, etc."
+                data-i18n-placeholder="course_placeholder"
+              />
+            </label>
+
+            <label class="field">
+              <span class="field-label" data-i18n="percentage_label"
+                >Percentage</span
+              >
+              <input
+                type="number"
+                name="percentage"
+                class="text-input"
+                min="0"
+                max="100"
+                step="0.1"
+                placeholder="68"
+                data-i18n-placeholder="percentage_placeholder"
+              />
+            </label>
+
+            <label class="field field-wide">
+              <span class="field-label" data-i18n="district_label"
+                >District</span
+              >
+              <input
+                type="text"
+                name="district"
+                class="text-input"
+                placeholder="Coimbatore"
+                data-i18n-placeholder="district_placeholder"
+              />
+            </label>
+
+            <fieldset class="field field-wide language-field">
+              <legend class="field-label" data-i18n="language_label">
+                Preferred languages
+              </legend>
+              <div class="language-options">
+                <label class="language-option">
+                  <input type="checkbox" name="languages" value="ta" checked />
+                  <span data-i18n="language_tamil">Tamil</span>
+                </label>
+                <label class="language-option">
+                  <input type="checkbox" name="languages" value="en" />
+                  <span data-i18n="language_english">English</span>
+                </label>
+              </div>
+            </fieldset>
+          </div>
+        </form>
+
+        <div class="profile-actions">
+          <button
+            type="button"
+            id="match-btn"
+            class="btn btn-primary"
+            data-i18n="match_button"
+          >
+            Find Matches
+          </button>
+          <a class="text-link" href="#chat" data-i18n="chat_title"
+            >Ask Athena</a
+          >
+        </div>
+      </section>
+
+      <p class="ornament" aria-hidden="true">⁂</p>
+
+      <section class="tile tile-light panel chat" id="chat" aria-labelledby="chat-heading">
+        <header class="tile-head">
+          <span class="chapter-mark" aria-hidden="true">II.</span>
+          <h2 id="chat-heading" class="display-md" data-i18n="chat_title">
+            Ask Athena
+          </h2>
+          <p class="tile-sub">
+            Tamil or English. The model runs on your device.
+          </p>
+        </header>
+
+        <div id="messages" class="messages" role="log" aria-live="polite"></div>
+
+        <form id="chat-form" class="chat-form">
+          <div class="search-input-wrap">
+            <svg
+              class="search-icon"
+              width="14"
+              height="14"
+              viewBox="0 0 14 14"
+              aria-hidden="true"
+            >
+              <circle
+                cx="6"
+                cy="6"
+                r="4.5"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.4"
+              />
+              <line
+                x1="9.4"
+                y1="9.4"
+                x2="12.6"
+                y2="12.6"
+                stroke="currentColor"
+                stroke-width="1.4"
+                stroke-linecap="round"
+              />
+            </svg>
+            <input
+              id="chat-input"
+              class="search-input"
+              type="text"
+              placeholder="Ask about scholarships..."
+              data-i18n-placeholder="chat_placeholder"
+              required
+            />
+          </div>
+          <div class="chat-actions">
+            <button
+              type="submit"
+              class="btn btn-primary"
+              data-i18n="send_button"
+            >
+              Send
+            </button>
+            <button
+              type="button"
+              id="voice-btn"
+              class="btn btn-utility"
+              data-i18n="voice_button"
+            >
+              Voice
+            </button>
+          </div>
+        </form>
+      </section>
+
+      <p class="ornament ornament-dark" aria-hidden="true">⁂</p>
+
+      <section class="tile tile-dark panel matches" aria-labelledby="matches-heading">
+        <header class="tile-head">
+          <span class="chapter-mark on-dark" aria-hidden="true">III.</span>
+          <h2 id="matches-heading" class="display-md" data-i18n="matches_title">
+            Matches
+          </h2>
+          <p class="tile-sub on-dark-muted">
+            Curated from your profile against the local scheme database.
+          </p>
+        </header>
+        <ul id="matches-list" class="matches-list"></ul>
+        <p id="matches-empty" class="empty on-dark-muted" data-i18n="matches_empty">
+          No matches yet. Use Find Matches.
+        </p>
+      </section>
+
+      <p class="ornament" aria-hidden="true">⁂</p>
+
+      <section class="tile tile-parchment panel applications" aria-labelledby="applications-heading">
+        <header class="tile-head panel-header">
+          <div>
+            <span class="chapter-mark" aria-hidden="true">IV.</span>
+            <h2
+              id="applications-heading"
+              class="display-md"
+              data-i18n="applications_title"
+            >
+              Applications
+            </h2>
+            <p class="tile-sub">Your tracked schemes and deadlines.</p>
+          </div>
+          <button
+            type="button"
+            id="refresh-apps-btn"
+            class="btn btn-utility"
+            data-i18n="refresh_button"
+          >
+            Refresh
+          </button>
+        </header>
+        <ul id="applications-list" class="applications-list"></ul>
+        <p id="applications-empty" class="empty" data-i18n="applications_empty">
+          No applications tracked yet.
+        </p>
+      </section>
+    </main>
+
+    <p class="ornament" aria-hidden="true">⁂</p>
+
+    <footer class="footer">
+      <p class="colophon-lead">A scholar's ledger.</p>
+      <p class="fine-print">
+        Athena runs locally. No data leaves this device unless you choose to
+        submit a form. The voice button uses Chrome's Web Speech API which
+        sends audio to Google for transcription.
+      </p>
+      <p class="micro-legal">
+        <span>Tamil-first Scholarship Agent</span>
+        <span class="micro-sep">·</span>
+        <span>v1.0.0</span>
+        <span class="micro-sep">·</span>
+        <span>MMXXVI</span>
+      </p>
+    </footer>
+
+    <script src="data/db.js"></script>
+    <script src="agent/matcher.js"></script>
+    <script src="sidepanel.js" type="module"></script>
+  </body>
+</html>

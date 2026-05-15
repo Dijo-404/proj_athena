@@ -77,12 +77,14 @@ sudo systemctl edit ollama            # Linux — add Environment="OLLAMA_ORIGIN
 ```bash
 git clone https://github.com/YOUR_USERNAME/athena
 cd athena
+npm ci
+npm run build
 ```
 
 1. Open Chrome → `chrome://extensions`
 2. Enable **Developer Mode** (top right)
 3. Click **Load unpacked**
-4. Select the `athena/` folder
+4. Select the `dist/athena/` folder
 
 ### 3. Run it
 1. Click the Athena icon in your toolbar
@@ -94,40 +96,67 @@ cd athena
 
 ## Build & Packaging
 
-Requires Node.js 18+ and the `zip` CLI (or replace with 7z).
+Requires Node.js 18+.
 
 ```bash
-# Generate minimal icons (only needed if you change them)
-npm run icons
-
-# Build into dist/athena for Chrome loading or packaging
-npm run build
-
-# Package as dist/athena.zip for Chrome Web Store
-npm run package
+npm ci                # Install dependencies
+npm run validate      # Manifest + i18n + reference integrity check
+npm run icons         # Generate icons (only needed once)
+npm run build         # Build into dist/athena/ for Chrome loading
+npm run package       # Package as dist/athena.zip for Chrome Web Store
 ```
+
+Packaging uses `archiver` (pure-Node), so it works on Windows, macOS, and Linux without an external `zip` CLI.
 
 ## Project Structure
 
 ```
 athena/
-├── manifest.json          # Chrome extension config (Manifest V3)
-├── background.js          # Service worker — Ollama communication
-├── content.js             # DOM reader + form executor
-├── sidepanel.html         # Main UI
-├── sidepanel.js           # UI logic + Gemma 4 chat interface
-├── agent/
-│   ├── matcher.js         # Scholarship matching via function calling
-│   ├── filler.js          # Form fill executor
-│   └── tracker.js         # Application status tracker
-├── data/
-│   ├── schemes.json       # Pre-seeded scholarship database (50+ schemes)
-│   └── portals.json       # Portal-specific DOM selectors
-├── locales/
-│   ├── ta.json            # Tamil UI strings
-│   └── en.json            # English UI strings
-└── KAGGLE_WRITEUP.md      # Competition submission writeup
+├── docs/                       # Long-form docs
+│   ├── ARCHITECTURE.md         # System internals
+│   ├── DEPLOYMENT.md           # Deployment-readiness plan
+│   └── KAGGLE.md               # Competition writeup
+├── scripts/                    # Build tooling (Node ESM)
+│   ├── build.mjs               # src/ + bundled web-llm → dist/athena/
+│   ├── bundle-webllm.mjs       # esbuild bundle of @mlc-ai/web-llm
+│   ├── generate-icons.mjs      # Programmatic PNG icons
+│   ├── package.mjs             # Zip dist/athena/ → dist/athena.zip
+│   └── validate.mjs            # Pre-build integrity checks
+├── src/                        # Everything that ships in the extension
+│   ├── manifest.json           # Manifest V3
+│   ├── background.js           # Service worker (Ollama orchestration)
+│   ├── content.js              # Content script (DOM observer + filler bridge)
+│   ├── sidepanel.html          # Side panel UI
+│   ├── sidepanel.js            # Side panel controller (WebLLM primary, Ollama fallback, HITL approval)
+│   ├── agent/
+│   │   ├── matcher.js          # Scholarship matching + eligibility scoring
+│   │   ├── filler.js           # DOM form-fill executor
+│   │   └── tracker.js          # Application status tracker
+│   ├── data/
+│   │   ├── db.js               # IndexedDB wrapper
+│   │   └── schemes.json        # Pre-seeded scholarship database
+│   ├── locales/
+│   │   ├── en.json
+│   │   └── ta.json
+│   ├── styles/
+│   │   └── sidepanel.css       # Scholar's Ledger design system
+│   ├── fonts/                  # Self-hosted Fraunces + Plus Jakarta Sans + Noto Serif Tamil
+│   └── icons/                  # 48px + 128px extension icons
+├── .github/workflows/          # CI + release pipelines
+├── LICENSE
+├── PRIVACY.md
+├── README.md
+└── package.json
 ```
+
+### Inference paths
+
+Athena runs LLM inference through two paths, in priority order:
+
+1. **WebLLM (primary)** — Gemma 2 2B (q4f16) compiled for WebGPU, runs entirely in the browser process. First-time model download is cached locally. No external dependencies once the model is cached.
+2. **Ollama (fallback)** — `gemma3:4b` at `http://localhost:11434`. Used when WebGPU isn't available or WebLLM init fails.
+
+Want to compile a newer Gemma for in-browser use? See `docs/ARCHITECTURE.md` for the MLC-LLM build pipeline.
 
 ---
 
