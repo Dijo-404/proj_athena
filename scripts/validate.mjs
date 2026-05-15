@@ -81,6 +81,37 @@ if (manifest.version !== pkg.version) {
   errors.push("manifest.json version does not match package.json version");
 }
 
+const REQUIRED_MODULES = [
+  "background.js",
+  "sidepanel.js",
+  "content.js",
+  "lib/messages.js",
+  "lib/portals.js",
+  "lib/profile.js",
+  "lib/prompt.js",
+  "lib/tools.js",
+  "lib/parse.js",
+  "lib/agent-loop.js",
+  "data/db.js",
+  "data/schemes.json",
+  "agent/matcher.js",
+  "agent/tracker.js",
+  "agent/filler.js",
+];
+for (const mod of REQUIRED_MODULES) {
+  try {
+    await fs.access(path.join(srcDir, mod));
+  } catch {
+    errors.push(`Required module missing: src/${mod}`);
+  }
+}
+
+if (manifest.background?.service_worker && manifest.background.type !== "module") {
+  errors.push(
+    'manifest.background.type must be "module" (background uses ES imports)',
+  );
+}
+
 if (errors.length) {
   console.error("Validation failed:");
   for (const e of errors) console.error("  - " + e);
